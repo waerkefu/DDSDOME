@@ -126,6 +126,9 @@ public interface OrderService {
      */
     Orders getByOrderNoOrThrow(String orderNo);
 
-    // 批量关闭超时未接单的订单
+    /**
+     * 批量关闭超时未接单的订单
+     * @return 关闭的订单数量
+     */
     int closeExpiredOrders();
 }
