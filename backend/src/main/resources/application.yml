@@ -1,0 +1,47 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: daijia-h5-backend
+  profiles:
+    active: dev
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+app:
+  jwt:
+    # 生产环境请通过环境变量或配置中心覆盖该密钥
+    secret: daijia-h5-platform-jwt-secret-key-please-change-in-production
+    expire-minutes: 1440
+    header: Authorization
+    prefix: "Bearer "
+  redis:
+    # Redis 用于缓存与幂等加速；关闭或不可用时，业务一致性由数据库唯一约束与乐观锁保证
+    enabled: true
+  order:
+    # 待接单订单超时自动关闭时间（分钟）
+    accept-timeout-minutes: 15
+    # 预约单允许的最大提前预约天数
+    max-booking-days: 7
