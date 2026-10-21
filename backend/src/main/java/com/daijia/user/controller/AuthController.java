@@ -25,19 +25,27 @@ public class AuthController {
 
     private final AuthService authService;
 
-    /** 登录（无需鉴权） */
+    /** 登录（无需鉴权）
+     * @param request 登录请求
+     * @return 登录成功后的登录凭证
+     */
     @PostMapping("/login")
     public Result<LoginVO> login(@Valid @RequestBody LoginRequest request) {
         return Result.ok(authService.login(request));
     }
 
-    /** 注册（无需鉴权） */
+    /** 注册（无需鉴权）
+     * @param request 注册请求
+     * @return 注册成功后的登录凭证
+     */
     @PostMapping("/register")
     public Result<LoginVO> register(@Valid @RequestBody RegisterRequest request) {
         return Result.ok(authService.register(request));
     }
 
-    /** 当前登录用户信息 */
+    /** 当前登录用户信息（需鉴权）
+     * @return 当前登录用户的VO
+     */
     @GetMapping("/me")
     public Result<CurrentUserVO> me() {
         return Result.ok(authService.currentUser(UserContext.currentUserId()));

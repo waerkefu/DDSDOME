@@ -111,13 +111,21 @@ public class AuthInterceptor implements HandlerInterceptor {
         return true;
     }
 
-    /** 请求结束后清理 UserContext */
+    /** 请求结束后清理 UserContext
+     * @param request HTTP 请求
+     * @param response HTTP 响应
+     * @param handler 处理器（Controller 方法）
+     * @param ex 异常对象（如果有）
+     */
      @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         UserContext.clear();
     }
 
-    /** 从请求头提取令牌，兼容带与不带 Bearer 前缀两种写法 */
+    /** 从请求头提取令牌，兼容带与不带 Bearer 前缀两种写法
+     * @param request HTTP 请求
+     * @return 令牌（去掉前缀）
+     */
     private String resolveToken(HttpServletRequest request) {
         // 从请求头提取令牌
         String header = request.getHeader(jwtProperties.getHeader());
@@ -138,7 +146,11 @@ public class AuthInterceptor implements HandlerInterceptor {
         return header.trim();
     }
 
-    /** 方法上有注解用方法上的，否则回退到类上的 */
+    /** 方法上有注解用方法上的，否则回退到类上的注解
+     * @param handlerMethod 处理器（Controller 方法）
+     * @param type 注解类型
+     * @return 注解实例（如果有）
+     */
     private <A extends java.lang.annotation.Annotation> A resolveAnnotation(HandlerMethod handlerMethod, Class<A> type) {
         // 从方法上获取注解
         A annotation = handlerMethod.getMethodAnnotation(type);
@@ -151,7 +163,11 @@ public class AuthInterceptor implements HandlerInterceptor {
         // 如果类上也没有注解，返回 null（默认值）
     }
 
-    /** 检查用户角色是否匹配要求 */
+    /** 检查用户角色是否匹配要求
+     * @param roles 用户角色集合
+     * @param requireRole 角色要求解
+     * @return 是否匹配要求
+     */
     private boolean matchRole(Set<String> roles, RequireRole requireRole) {
         // 如果没有指定角色，返回 true
         if (requireRole.value().length == 0) {

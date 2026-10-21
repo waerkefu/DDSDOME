@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>代驾代办 H5 平台 · 架构图解</title>
+<style>
+  :root{
+    --bg:#f5f7fb; --card:#ffffff; --line:#e2e8f0; --ink:#0f172a; --muted:#64748b;
+    --blue:#3b82f6; --blueBg:#eff6ff;
+    --amber:#f59e0b; --amberBg:#fffbeb;
+    --green:#10b981; --greenBg:#ecfdf5;
+    --purple:#8b5cf6; --purpleBg:#f5f3ff;
+    --red:#ef4444; --redBg:#fef2f2;
+    --slate:#475569; --slateBg:#f1f5f9;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:0 0 80px;
+    background:var(--bg); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    font-size:15px; line-height:1.7;
+  }
+  header{
+    background:linear-gradient(135deg,#1e293b,#334155);
+    color:#fff; padding:34px 28px 30px;
+  }
+  header h1{margin:0 0 8px; font-size:26px; letter-spacing:.5px}
+  header p{margin:0; color:#cbd5e1; font-size:14px}
+  .wrap{max-width:1240px; margin:0 auto; padding:0 20px}
+  nav{
+    background:#fff; border-bottom:1px solid var(--line);
+    padding:12px 0; position:sticky; top:0; z-index:9;
+    box-shadow:0 1px 3px rgba(15,23,42,.06);
+  }
+  nav .wrap{display:flex; flex-wrap:wrap; gap:8px}
+  nav a{
+    font-size:13px; color:var(--slate); text-decoration:none;
+    background:var(--slateBg); padding:4px 11px; border-radius:20px;
+    border:1px solid var(--line); white-space:nowrap;
+  }
+  nav a:hover{background:var(--blueBg); color:var(--blue); border-color:#bfdbfe}
+  section{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    margin:26px auto; padding:22px 22px 26px; max-width:1240px;
+    box-shadow:0 1px 2px rgba(15,23,42,.04);
+  }
+  h2{
+    font-size:19px; margin:0 0 4px; padding-left:12px;
+    border-left:4px solid var(--blue); line-height:1.3;
+  }
+  .cap{color:var(--muted); font-size:13px; margin:6px 0 18px; padding-left:16px}
+  .fig{overflow-x:auto; padding-bottom:4px}
+  .fig svg{display:block; margin:0 auto; height:auto}
+  .note{
+    background:var(--blueBg); border:1px solid #bfdbfe; border-radius:10px;
+    padding:12px 16px; font-size:13.5px; color:#1e3a5f; margin-top:16px;
+  }
+  .note.warn{background:var(--amberBg); border-color:#fde68a; color:#78350f}
+  .note.bad{background:var(--redBg); border-color:#fecaca; color:#7f1d1d}
+  .note b{color:inherit}
+  table{width:100%; border-collapse:collapse; font-size:13px}
+  th,td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; text-align:left}
+  th{background:var(--slateBg); font-weight:600; color:var(--slate); font-size:12.5px; white-space:nowrap}
+  tbody tr:hover{background:#fafcff}
+  .chip{
+    display:inline-block; padding:1px 8px; border-radius:6px; font-size:12px;
+    white-space:nowrap; margin:1px 0; border:1px solid transparent;
+  }
+  .c-blue{background:var(--blueBg); color:#1d4ed8; border-color:#bfdbfe}
+  .c-green{background:var(--greenBg); color:#047857; border-color:#a7f3d0}
+  .c-amber{background:var(--amberBg); color:#b45309; border-color:#fde68a}
+  .c-purple{background:var(--purpleBg); color:#6d28d9; border-color:#ddd6fe}
+  .c-slate{background:var(--slateBg); color:var(--slate); border-color:#cbd5e1}
+  .c-red{background:var(--redBg); color:#b91c1c; border-color:#fecaca}
+  .steps{display:flex; flex-wrap:wrap; gap:10px; margin-top:4px}
+  .step{
+    flex:1 1 190px; border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; background:#fff; position:relative;
+  }
+  .step .n{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:22px; height:22px; border-radius:50%; background:var(--blue); color:#fff;
+    font-size:12px; font-weight:700; margin-right:6px;
+  }
+  .step .t{font-weight:600; font-size:13.5px}
+  .step .d{color:var(--muted); font-size:12.5px; margin-top:4px; line-height:1.55}
+  .step.key{border-color:#a7f3d0; background:var(--greenBg)}
+  .step.key .n{background:var(--green)}
+  .layers{display:flex; flex-direction:column; gap:0; margin-top:6px}
+  .layer{
+    display:flex; align-items:center; gap:14px;
+    border:1px solid var(--line); border-radius:10px; padding:12px 16px; background:#fff;
+  }
+  .layer .lab{
+    flex:0 0 92px; font-weight:700; font-size:13px; text-align:center;
+    padding:6px 0; border-radius:8px;
+  }
+  .layer .body{flex:1; font-size:13.5px}
+  .layer .body small{display:block; color:var(--muted); font-size:12.5px; margin-top:2px}
+  .arrowdown{text-align:center; color:#94a3b8; font-size:18px; line-height:1.2; margin:2px 0}
+  img.er{width:100%; height:auto; border:1px solid var(--line); border-radius:10px; background:#fff}
+  .prio{font-weight:700; font-size:12px; padding:1px 7px; border-radius:5px}
+  .p0{background:#fee2e2; color:#991b1b}
+  .p1{background:#ffedd5; color:#9a3412}
+  .p2{background:#fef9c3; color:#854d0e}
+  footer{text-align:center; color:var(--muted); font-size:12.5px; padding:10px 20px 0}
+  @media print{
+    body{background:#fff}
+    nav{display:none}
+    section{break-inside:avoid; box-shadow:none; margin:14px 0}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>代驾代办 H5 平台 · 架构图解</h1>
+    <p>1 个 Spring Boot 后端 + 3 个 Vue 3 前端 · 模块协作 / 数据流 / 司机抢单机制 · 配合《学习文档-模块协作与数据流.md》阅读</p>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#f1">① 系统全景</a>
+  <a href="#f2">② 一次请求的旅程</a>
+  <a href="#f3">③ 功能 → 模块协作矩阵</a>
+  <a href="#f4">④ 订单状态机</a>
+  <a href="#f5">⑤ 抢单并发（核心）</a>
+  <a href="#f6">⑥ 抢单 9 步</a>
+  <a href="#f7">⑦ 支付与退款</a>
+  <a href="#f8">⑧ 三层防重</a>
+  <a href="#f9">⑨ 数据表关系</a>
+  <a href="#f10">⑩ 已知缺口</a>
+</div></nav>
+
+<!-- ============================= 图 1 ============================= -->
+<section id="f1">
+  <h2>① 系统全景：谁连谁</h2>
+  <p class="cap">三个前端各自独立部署，共用同一套后端与同一套账号体系；后端只依赖 MySQL 与「可降级」的 Redis。</p>
+
+  <div class="fig">
+  <svg viewBox="0 0 1160 580" width="1160" role="img" aria-label="系统全景图">
+    <defs>
+      <marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+      </marker>
+    </defs>
+
+    <!-- 前端三端 -->
+    <g>
+      <rect x="130" y="36" width="260" height="96" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+      <text x="260" y="64" text-anchor="middle" font-size="15" font-weight="700" fill="#1d4ed8">客户 H5</text>
+      <text x="260" y="88" text-anchor="middle" font-size="12.5" fill="#3b82f6">localhost:5174 · CUSTOMER</text>
+      <text x="260" y="108" text-anchor="middle" font-size="12" fill="#64748b">下单 · 支付 · 订单详情</text>
+    </g>
+    <g>
+      <rect x="450" y="36" width="260" height="96" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+      <text x="580" y="64" text-anchor="middle" font-size="15" font-weight="700" fill="#1d4ed8">服务商 H5</text>
+      <text x="580" y="88" text-anchor="middle" font-size="12.5" fill="#3b82f6">localhost:5175 · PROVIDER</text>
+      <text x="580" y="108" text-anchor="middle" font-size="12" fill="#64748b">接单大厅 · 抢单 · 结算</text>
+    </g>
+    <g>
+      <rect x="770" y="36" width="260" height="96" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+      <text x="900" y="64" text-anchor="middle" font-size="15" font-weight="700" fill="#1d4ed8">管理后台</text>
+      <text x="900" y="88" text-anchor="middle" font-size="12.5" fill="#3b82f6">localhost:5173 · ADMIN</text>
+      <text x="900" y="108" text-anchor="middle" font-size="12" fill="#64748b">用户 · 订单 · 计价 · 退款</text>
+    </g>
+
+    <!-- 连线 -->
+    <line x1="260" y1="132" x2="260" y2="192" stroke="#64748b" stroke-width="1.6" marker-end="url(#m1)"/>
+    <line x1="580" y1="132" x2="580" y2="192" stroke="#64748b" stroke-width="1.6" marker-end="url(#m1)"/>
+    <line x1="900" y1="132" x2="900" y2="192" stroke="#64748b" stroke-width="1.6" marker-end="url(#m1)"/>
+    <text x="596" y="156" font-size="12.5" fill="#64748b">HTTP /api · Authorization: Bearer &lt;JWT&gt;</text>
+
+    <!-- 后端容器 -->
+    <rect x="100" y="196" width="960" height="150" rx="14" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="7 5"/>
+    <text x="120" y="220" font-size="12.5" fill="#475569">Spring Boot 3.2.5 · Java 21 · 端口 8080 · 单库单应用</text>
+
+    <!-- 内部分层 -->
+    <rect x="126" y="236" width="200" height="66" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="226" y="262" text-anchor="middle" font-size="13.5" font-weight="700" fill="#b45309">AuthInterceptor</text>
+    <text x="226" y="284" text-anchor="middle" font-size="11.5" fill="#92400e">JWT · 角色 · UserContext</text>
+
+    <rect x="362" y="236" width="200" height="66" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+    <text x="462" y="262" text-anchor="middle" font-size="13.5" font-weight="700" fill="#047857">Controller</text>
+    <text x="462" y="284" text-anchor="middle" font-size="11.5" fill="#065f46">@RequireRole · 参数校验</text>
+
+    <rect x="598" y="236" width="200" height="66" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+    <text x="698" y="262" text-anchor="middle" font-size="13.5" font-weight="700" fill="#047857">Service</text>
+    <text x="698" y="284" text-anchor="middle" font-size="11.5" fill="#065f46">事务 · 状态机 · 编排</text>
+
+    <rect x="834" y="236" width="200" height="66" rx="10" fill="#f1f5f9" stroke="#475569" stroke-width="1.5"/>
+    <text x="934" y="262" text-anchor="middle" font-size="13.5" font-weight="700" fill="#334155">Mapper</text>
+    <text x="934" y="284" text-anchor="middle" font-size="11.5" fill="#475569">条件 SQL · 逻辑删除</text>
+
+    <line x1="328" y1="269" x2="358" y2="269" stroke="#64748b" stroke-width="1.5" marker-end="url(#m1)"/>
+    <line x1="564" y1="269" x2="594" y2="269" stroke="#64748b" stroke-width="1.5" marker-end="url(#m1)"/>
+    <line x1="800" y1="269" x2="830" y2="269" stroke="#64748b" stroke-width="1.5" marker-end="url(#m1)"/>
+
+    <!-- 数据层 -->
+    <line x1="400" y1="346" x2="400" y2="426" stroke="#64748b" stroke-width="1.6" marker-end="url(#m1)"/>
+    <text x="412" y="390" font-size="12.5" fill="#64748b">JDBC · MyBatis-Plus</text>
+    <line x1="790" y1="346" x2="790" y2="426" stroke="#ef4444" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#m1)"/>
+    <text x="802" y="390" font-size="12.5" fill="#b91c1c">SETNX 幂等 · 不可用即放行</text>
+
+    <rect x="250" y="430" width="300" height="96" rx="12" fill="#f1f5f9" stroke="#475569" stroke-width="1.6"/>
+    <text x="400" y="458" text-anchor="middle" font-size="14.5" font-weight="700" fill="#1e293b">MySQL 8 · DDS</text>
+    <text x="400" y="482" text-anchor="middle" font-size="12.5" fill="#475569">13 张表 · utf8mb4 · 无物理外键</text>
+    <text x="400" y="504" text-anchor="middle" font-size="11.5" fill="#64748b">orders / payment / refund / provider …</text>
+
+    <rect x="640" y="430" width="300" height="96" rx="12" fill="#fef2f2" stroke="#ef4444" stroke-width="1.6" stroke-dasharray="7 5"/>
+    <text x="790" y="458" text-anchor="middle" font-size="14.5" font-weight="700" fill="#991b1b">Redis（可选）</text>
+    <text x="790" y="482" text-anchor="middle" font-size="12.5" fill="#b91c1c">幂等令牌 / 抢单短时防重</text>
+    <text x="790" y="504" text-anchor="middle" font-size="11.5" fill="#b91c1c">故障 → 熔断 30s → 全部放行</text>
+  </svg>
+  </div>
+
+  <div class="note">
+    <b>读图要点：</b>虚线画的 Redis 意味着「它不参与正确性」——挂了业务照跑，只是更多请求会打到数据库。
+    这条设计贯穿全项目，也是抢单机制的关键（见 ⑤）。
+  </div>
+</section>
+
+<!-- ============================= 图 2 ============================= -->
+<section id="f2">
+  <h2>② 一次请求的旅程：六道关卡</h2>
+  <p class="cap">任何一个 <code>/api/**</code> 请求都会按这个顺序穿过六层，每层各管一件事。</p>
+
+  <div class="fig">
+  <svg viewBox="0 0 1160 340" width="1160" role="img" aria-label="请求处理链路">
+    <defs>
+      <marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#3b82f6"/>
+      </marker>
+    </defs>
+
+    <!-- 1 -->
+    <rect x="40" y="30" width="150" height="170" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <circle cx="58" cy="48" r="12" fill="#3b82f6"/>
+    <text x="58" y="53" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">1</text>
+    <text x="115" y="90" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1d4ed8">浏览器</text>
+    <text x="115" y="116" text-anchor="middle" font-size="11.5" fill="#334155">取 localStorage</text>
+    <text x="115" y="138" text-anchor="middle" font-size="11.5" fill="#334155">注入 Authorization</text>
+    <text x="115" y="160" text-anchor="middle" font-size="11.5" fill="#334155">baseURL = /api</text>
+    <text x="115" y="182" text-anchor="middle" font-size="11.5" fill="#334155">统一弹错提示</text>
+
+    <!-- 2 -->
+    <rect x="226" y="30" width="150" height="170" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <circle cx="244" cy="48" r="12" fill="#64748b"/>
+    <text x="244" y="53" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">2</text>
+    <text x="301" y="90" text-anchor="middle" font-size="13.5" font-weight="700" fill="#334155">Vite Proxy</text>
+    <text x="301" y="116" text-anchor="middle" font-size="11.5" fill="#334155">/api → :8080</text>
+    <text x="301" y="138" text-anchor="middle" font-size="11.5" fill="#334155">开发期免 CORS</text>
+    <text x="301" y="160" text-anchor="middle" font-size="11.5" fill="#334155">生产换 Nginx</text>
+
+    <!-- 3 -->
+    <rect x="412" y="30" width="150" height="170" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+    <circle cx="430" cy="48" r="12" fill="#f59e0b"/>
+    <text x="430" y="53" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">3</text>
+    <text x="487" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="#b45309">AuthInterceptor</text>
+    <text x="487" y="116" text-anchor="middle" font-size="11.5" fill="#92400e">解析 JWT</text>
+    <text x="487" y="138" text-anchor="middle" font-size="11.5" fill="#92400e">查用户/角色/权限</text>
+    <text x="487" y="160" text-anchor="middle" font-size="11.5" fill="#92400e">匹配 @RequireRole</text>
+    <text x="487" y="182" text-anchor="middle" font-size="11.5" fill="#92400e">写入 UserContext</text>
+
+    <!-- 4 -->
+    <rect x="598" y="30" width="150" height="170" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+    <circle cx="616" cy="48" r="12" fill="#10b981"/>
+    <text x="616" y="53" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">4</text>
+    <text x="673" y="90" text-anchor="middle" font-size="13.5" font-weight="700" fill="#047857">Controller</text>
+    <text x="673" y="116" text-anchor="middle" font-size="11.5" fill="#065f46">@Valid 校验</text>
+    <text x="673" y="138" text-anchor="middle" font-size="11.5" fill="#065f46">取当前 userId</text>
+    <text x="673" y="160" text-anchor="middle" font-size="11.5" fill="#065f46">调用 Service</text>
+    <text x="673" y="182" text-anchor="middle" font-size="11.5" fill="#065f46">包成 Result</text>
+
+    <!-- 5 -->
+    <rect x="784" y="30" width="150" height="170" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+    <circle cx="802" cy="48" r="12" fill="#10b981"/>
+    <text x="802" y="53" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">5</text>
+    <text x="859" y="90" text-anchor="middle" font-size="13.5" font-weight="700" fill="#047857">Service</text>
+    <text x="859" y="116" text-anchor="middle" font-size="11.5" fill="#065f46">@Transactional</text>
+    <text x="859" y="138" text-anchor="middle" font-size="11.5" fill="#065f46">状态机校验</text>
+    <text x="859" y="160" text-anchor="middle" font-size="11.5" fill="#065f46">CAS 条件更新</text>
+    <text x="859" y="182" text-anchor="middle" font-size="11.5" fill="#065f46">写状态日志</text>
+
+    <!-- 6 -->
+    <rect x="970" y="30" width="150" height="170" rx="10" fill="#f1f5f9" stroke="#475569" stroke-width="1.5"/>
+    <circle cx="988" cy="48" r="12" fill="#475569"/>
+    <text x="988" y="53" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">6</text>
+    <text x="1045" y="90" text-anchor="middle" font-size="13.5" font-weight="700" fill="#334155">Mapper → DB</text>
+    <text x="1045" y="116" text-anchor="middle" font-size="11.5" fill="#334155">MyBatis-Plus</text>
+    <text x="1045" y="138" text-anchor="middle" font-size="11.5" fill="#334155">手写 deleted=0</text>
+    <text x="1045" y="160" text-anchor="middle" font-size="11.5" fill="#334155">InnoDB 行锁</text>
+    <text x="1045" y="182" text-anchor="middle" font-size="11.5" fill="#334155">影响行数判定</text>
+
+    <line x1="192" y1="115" x2="222" y2="115" stroke="#3b82f6" stroke-width="1.6" marker-end="url(#m2)"/>
+    <line x1="378" y1="115" x2="408" y2="115" stroke="#3b82f6" stroke-width="1.6" marker-end="url(#m2)"/>
+    <line x1="564" y1="115" x2="594" y2="115" stroke="#3b82f6" stroke-width="1.6" marker-end="url(#m2)"/>
+    <line x1="750" y1="115" x2="780" y2="115" stroke="#3b82f6" stroke-width="1.6" marker-end="url(#m2)"/>
+    <line x1="936" y1="115" x2="966" y2="115" stroke="#3b82f6" stroke-width="1.6" marker-end="url(#m2)"/>
+
+    <rect x="40" y="246" width="1080" height="64" rx="10" fill="#fef2f2" stroke="#fecaca" stroke-width="1.4"/>
+    <text x="60" y="272" font-size="13" fill="#7f1d1d">任一层失败 → 抛 BusinessException → @RestControllerAdvice 的 GlobalExceptionHandler 捕获</text>
+    <text x="60" y="294" font-size="13" fill="#7f1d1d">→ 返回 HTTP 200 + Result{code, message} → 前端拦截器读 code 决定：弹提示 / 清 token 跳登录</text>
+  </svg>
+  </div>
+
+  <div class="note warn">
+    <b>最容易踩的坑：</b>后端 HTTP 状态码永远是 <code>200</code>，成功与否写在 body 的 <code>code</code> 里。
+    所以前端必须在「成功分支」里判断 <code>res.code === 200</code>，否则你会拿到一个没有 <code>data</code> 的响应体却不报错。
+  </div>
+</section>
+
+<!-- ============================= 图 3 ============================= -->
+<section id="f3">
+  <h2>③ 功能 → 模块协作矩阵</h2>
+  <p class="cap">沿「谁发起 → 谁处理 → 谁配合 → 落到哪张表」这条主线看，任何一个功能都能在一行内定位到代码位置。（表格可横向滚动）</p>
+
+  <div class="fig">
+  <table>
+    <thead>
+      <tr>
+        <th style="min-width:120px">功能</th>
+        <th style="min-width:100px">发起端</th>
+        <th style="min-width:170px">Controller</th>
+        <th style="min-width:180px">Service（编排者）</th>
+        <th style="min-width:190px">协作模块</th>
+        <th style="min-width:130px">落库表</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>登录 / 注册</b></td>
+        <td><span class="chip c-blue">客户</span><span class="chip c-green">司机</span><span class="chip c-amber">管理</span></td>
+        <td>AuthController</td>
+        <td>AuthServiceImpl</td>
+        <td><span class="chip c-amber">PasswordEncoder</span><span class="chip c-amber">JwtUtil</span><span class="chip c-slate">SysRoleMapper</span></td>
+        <td>sys_user<br>sys_user_role</td>
+      </tr>
+      <tr>
+        <td><b>请求鉴权</b></td>
+        <td>全部接口</td>
+        <td>—（拦截器）</td>
+        <td>AuthInterceptor.preHandle</td>
+        <td><span class="chip c-amber">JwtUtil</span><span class="chip c-slate">UserContext</span><span class="chip c-slate">RequireRole</span></td>
+        <td>权限 5 张表</td>
+      </tr>
+      <tr>
+        <td><b>价格预估</b></td>
+        <td><span class="chip c-blue">客户</span></td>
+        <td>CustomerOrderController.estimate</td>
+        <td>PricingServiceImpl.estimate</td>
+        <td><span class="chip c-purple">PricingRuleMapper</span></td>
+        <td>pricing_rule</td>
+      </tr>
+      <tr>
+        <td><b>客户下单</b></td>
+        <td><span class="chip c-blue">客户</span></td>
+        <td>CustomerOrderController.create</td>
+        <td>OrderServiceImpl.create</td>
+        <td><span class="chip c-purple">IdempotencyService</span><span class="chip c-green">PricingService</span><span class="chip c-slate">NoGenerator</span><span class="chip c-slate">OrderProperties</span></td>
+        <td>orders<br>order_status_log</td>
+      </tr>
+      <tr>
+        <td><b>接单大厅</b></td>
+        <td><span class="chip c-green">司机</span></td>
+        <td>ProviderOrderController.hall</td>
+        <td>OrderServiceImpl.pageHall</td>
+        <td><span class="chip c-green">ProviderMapper</span><span class="chip c-green">canAcceptOrder()</span></td>
+        <td>orders<br>provider</td>
+      </tr>
+      <tr style="background:#f0fdf9">
+        <td><b>抢单 ★</b></td>
+        <td><span class="chip c-green">司机</span></td>
+        <td>ProviderOrderController.grab</td>
+        <td>OrderServiceImpl.grab</td>
+        <td><span class="chip c-green">ProviderMapper</span><span class="chip c-purple">IdempotencyService</span><span class="chip c-amber">OrderStateMachine</span><span class="chip c-slate">OrdersMapper.grabOrder</span></td>
+        <td>orders<br>order_status_log</td>
+      </tr>
+      <tr>
+        <td><b>开始 / 结束服务</b></td>
+        <td><span class="chip c-green">司机</span></td>
+        <td>ProviderOrderController.start / finish</td>
+        <td>OrderServiceImpl.startService / finishService</td>
+        <td><span class="chip c-amber">OrderStateMachine</span><span class="chip c-green">PricingService</span><span class="chip c-slate">casStatus</span></td>
+        <td>orders<br>order_status_log</td>
+      </tr>
+      <tr>
+        <td><b>发起支付</b></td>
+        <td><span class="chip c-blue">客户</span><span class="chip c-amber">管理</span></td>
+        <td>PaymentController.pay</td>
+        <td>PaymentServiceImpl.createPayment</td>
+        <td><span class="chip c-green">OrderService</span><span class="chip c-purple">IdempotencyService</span><span class="chip c-slate">NoGenerator</span></td>
+        <td>payment<br>orders</td>
+      </tr>
+      <tr>
+        <td><b>支付回调（模拟）</b></td>
+        <td>支付网关</td>
+        <td>MockPaymentCallbackController</td>
+        <td>PaymentServiceImpl.handleCallback</td>
+        <td><span class="chip c-slate">markPaid CAS</span><span class="chip c-amber">OrderStateMachine</span><span class="chip c-green">OrderService</span></td>
+        <td>payment<br>orders<br>order_status_log</td>
+      </tr>
+      <tr>
+        <td><b>退款</b></td>
+        <td><span class="chip c-amber">管理</span></td>
+        <td>AdminOrderController.refund</td>
+        <td>PaymentServiceImpl.refund</td>
+        <td><span class="chip c-slate">RefundMapper</span><span class="chip c-slate">markRefunded</span><span class="chip c-green">OrderService</span></td>
+        <td>refund<br>payment<br>orders</td>
+      </tr>
+      <tr>
+        <td><b>超时自动关闭</b></td>
+        <td>定时器 60s</td>
+        <td>—</td>
+        <td>OrderTimeoutTask → closeExpiredOrders</td>
+        <td><span class="chip c-slate">OrdersMapper.closeExpiredOrders</span></td>
+        <td>orders<br><span class="chip c-red">不写日志</span></td>
+      </tr>
+      <tr>
+        <td><b>在线 / 接单开关</b></td>
+        <td><span class="chip c-green">司机</span></td>
+        <td>ProviderProfileController</td>
+        <td>ProviderServiceImpl</td>
+        <td>—</td>
+        <td>provider</td>
+      </tr>
+      <tr>
+        <td><b>计价规则维护</b></td>
+        <td><span class="chip c-amber">管理</span></td>
+        <td>AdminPricingController</td>
+        <td>PricingServiceImpl</td>
+        <td><span class="chip c-purple">PricingRuleMapper</span></td>
+        <td>pricing_rule</td>
+      </tr>
+      <tr>
+        <td><b>用户 / 角色 / 权限</b></td>
+        <td><span class="chip c-amber">管理</span></td>
+        <td>AdminUserController<br>AdminRoleController</td>
+        <td>SysUserServiceImpl<br>SysRoleServiceImpl</td>
+        <td><span class="chip c-slate">SysRolePermissionMapper</span></td>
+        <td>权限 5 张表</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <b>三种协作模式：</b>
+    <span class="chip c-slate">A 纯 CRUD</span> Controller → 本域 Service → 本域 Mapper（计价规则、服务商档案）；
+    <span class="chip c-green">B 跨域编排</span> 本域 Service 借调其它域，一律注入对方 <b>Mapper</b>，只有 payment 注入 OrderService（为了复用带校验的查询）；
+    <span class="chip c-amber">C 框架切面</span> AuthInterceptor / MyMetaObjectHandler / GlobalExceptionHandler / OrderTimeoutTask，不出现在调用链里但每个请求都过。
+  </div>
+</section>
+
+<!-- ============================= 图 4 ============================= -->
+<section id="f4">
+  <h2>④ 订单状态机：唯一合法的 8 条边</h2>
+  <p class="cap">全部规则集中在 <code>OrderStateMachine.TRANSITIONS</code> 一张 EnumMap 里，order 与 payment 两个模块共用同一套校验。</p>
+
+  <div class="fig">
+  <svg viewBox="0 0 1000 470" width="1000" role="img" aria-label="订单状态机">
+    <defs>
+      <marker id="m3g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#10b981"/>
+      </marker>
+      <marker id="m3r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+      </marker>
+      <marker id="m3s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+      </marker>
+    </defs>
+
+    <!-- 图例 -->
+    <rect x="45" y="44" width="120" height="28" rx="14" fill="#ecfdf5" stroke="#10b981"/>
+    <text x="105" y="63" text-anchor="middle" font-size="12" fill="#047857">正向流转</text>
+    <rect x="185" y="44" width="120" height="28" rx="14" fill="#fef2f2" stroke="#ef4444"/>
+    <text x="245" y="63" text-anchor="middle" font-size="12" fill="#b91c1c">取消 / 关闭</text>
+    <rect x="325" y="44" width="160" height="28" rx="14" fill="#f1f5f9" stroke="#475569"/>
+    <text x="405" y="63" text-anchor="middle" font-size="12" fill="#334155">终态（不可再流转）</text>
+
+    <!-- 主链 -->
+    <rect x="45" y="140" width="150" height="56" rx="10" fill="#fff7ed" stroke="#f59e0b" stroke-width="1.6"/>
+    <text x="120" y="164" text-anchor="middle" font-size="12.5" font-weight="700" fill="#b45309">PENDING_ACCEPT</text>
+    <text x="120" y="183" text-anchor="middle" font-size="11.5" fill="#92400e">待接单</text>
+
+    <rect x="235" y="140" width="150" height="56" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.6"/>
+    <text x="310" y="164" text-anchor="middle" font-size="12.5" font-weight="700" fill="#047857">ACCEPTED</text>
+    <text x="310" y="183" text-anchor="middle" font-size="11.5" fill="#065f46">已接单</text>
+
+    <rect x="425" y="140" width="150" height="56" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.6"/>
+    <text x="500" y="164" text-anchor="middle" font-size="12.5" font-weight="700" fill="#047857">IN_SERVICE</text>
+    <text x="500" y="183" text-anchor="middle" font-size="11.5" fill="#065f46">服务中</text>
+
+    <rect x="615" y="140" width="150" height="56" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.6"/>
+    <text x="690" y="164" text-anchor="middle" font-size="12.5" font-weight="700" fill="#047857">PENDING_PAYMENT</text>
+    <text x="690" y="183" text-anchor="middle" font-size="11.5" fill="#065f46">待支付</text>
+
+    <rect x="805" y="140" width="150" height="56" rx="10" fill="#f1f5f9" stroke="#475569" stroke-width="1.6"/>
+    <text x="880" y="164" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1e293b">COMPLETED</text>
+    <text x="880" y="183" text-anchor="middle" font-size="11.5" fill="#475569">已完成</text>
+
+    <line x1="197" y1="168" x2="231" y2="168" stroke="#10b981" stroke-width="1.8" marker-end="url(#m3g)"/>
+    <text x="214" y="130" text-anchor="middle" font-size="12" fill="#047857">抢单</text>
+
+    <line x1="387" y1="168" x2="421" y2="168" stroke="#10b981" stroke-width="1.8" marker-end="url(#m3g)"/>
+    <text x="404" y="130" text-anchor="middle" font-size="12" fill="#047857">开始服务</text>
+
+    <line x1="577" y1="168" x2="611" y2="168" stroke="#10b981" stroke-width="1.8" marker-end="url(#m3g)"/>
+    <text x="594" y="130" text-anchor="middle" font-size="12" fill="#047857">结束服务</text>
+
+    <line x1="767" y1="168" x2="801" y2="168" stroke="#10b981" stroke-width="1.8" marker-end="url(#m3g)"/>
+    <text x="784" y="130" text-anchor="middle" font-size="12" fill="#047857">支付回调</text>
+
+    <!-- 取消 -->
+    <rect x="475" y="340" width="170" height="56" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="1.6"/>
+    <text x="560" y="364" text-anchor="middle" font-size="12.5" font-weight="700" fill="#b91c1c">CANCELLED</text>
+    <text x="560" y="383" text-anchor="middle" font-size="11.5" fill="#991b1b">已取消</text>
+
+    <line x1="150" y1="198" x2="498" y2="336" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#m3r)"/>
+    <line x1="310" y1="198" x2="558" y2="336" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#m3r)"/>
+    <line x1="690" y1="198" x2="620" y2="336" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#m3r)"/>
+
+    <!-- 关闭 -->
+    <rect x="20" y="340" width="150" height="56" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="1.6"/>
+    <text x="95" y="364" text-anchor="middle" font-size="12.5" font-weight="700" fill="#b91c1c">CLOSED</text>
+    <text x="95" y="383" text-anchor="middle" font-size="11.5" fill="#991b1b">超时关闭</text>
+
+    <line x1="60" y1="198" x2="93" y2="336" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#m3r)"/>
+    <text x="110" y="272" font-size="12" fill="#b91c1c">超时 15 分钟</text>
+    <text x="110" y="290" font-size="12" fill="#b91c1c">定时任务关闭</text>
+
+    <text x="560" y="424" text-anchor="middle" font-size="12.5" fill="#64748b">「待接单 / 已接单 / 待支付」可被取消；只有「待接单」会因超时被关闭</text>
+    <text x="560" y="446" text-anchor="middle" font-size="12.5" fill="#64748b">已接单之后没有「退单」路径 —— 司机接了单不能反悔，这是业务决策</text>
+  </svg>
+  </div>
+
+  <div class="note">
+    <b>为什么值钱：</b>想禁止某条流转（比如「已接单不能取消」），只改这张 EnumMap 一行，所有调用方（下单、抢单、支付回调、定时任务）自动生效。
+    这也意味着<b>改状态机时改这一处就够</b>，不要在各种 Service 里散写 if-else。
+  </div>
+</section>
+
+<!-- ============================= 图 5 ============================= -->
+<section id="f5">
+  <h2>⑤ 抢单并发：一条 SQL 决定谁赢 ★</h2>
+  <p class="cap">三个司机同一毫秒点「立即接单」。Redis 只负责把 3 个请求压成 1 个；真正裁决胜负的是那条带完整 WHERE 的 UPDATE。</p>
+
+  <div class="fig">
+  <svg viewBox="0 0 1160 800" width="1160" role="img" aria-label="抢单并发时序">
+    <defs>
+      <marker id="m5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+      </marker>
+      <marker id="m5g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#10b981"/>
+      </marker>
+      <marker id="m5r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+      </marker>
+    </defs>
+
+    <!-- 三个司机 -->
+    <rect x="180" y="36" width="220" height="64" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.6"/>
+    <text x="290" y="64" text-anchor="middle" font-size="14" font-weight="700" fill="#047857">司机 A</text>
+    <text x="290" y="85" text-anchor="middle" font-size="11.5" fill="#065f46">接单大厅 · 点「立即接单」</text>
+
+    <rect x="470" y="36" width="220" height="64" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.6"/>
+    <text x="580" y="64" text-anchor="middle" font-size="14" font-weight="700" fill="#047857">司机 B</text>
+    <text x="580" y="85" text-anchor="middle" font-size="11.5" fill="#065f46">同一毫秒点击</text>
+
+    <rect x="760" y="36" width="220" height="64" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.6"/>
+    <text x="870" y="64" text-anchor="middle" font-size="14" font-weight="700" fill="#047857">司机 C</text>
+    <text x="870" y="85" text-anchor="middle" font-size="11.5" fill="#065f46">同一毫秒点击</text>
+
+    <line x1="290" y1="100" x2="290" y2="156" stroke="#64748b" stroke-width="1.6" marker-end="url(#m5)"/>
+    <line x1="580" y1="100" x2="580" y2="156" stroke="#64748b" stroke-width="1.6" marker-end="url(#m5)"/>
+    <line x1="870" y1="100" x2="870" y2="156" stroke="#64748b" stroke-width="1.6" marker-end="url(#m5)"/>
+    <text x="600" y="132" font-size="12.5" fill="#64748b">POST /api/provider/orders/{orderNo}/grab</text>
+
+    <!-- Redis -->
+    <rect x="230" y="160" width="700" height="76" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="1.6" stroke-dasharray="7 5"/>
+    <text x="250" y="188" font-size="13.5" font-weight="700" fill="#991b1b">Redis  SETNX  daijia:idem:grab:{orderNo}   TTL = 5 秒</text>
+    <text x="250" y="214" font-size="12.5" fill="#b91c1c">只做削峰：正常情况下只放行 1 个请求；Redis 不可用时 setIfAbsent 直接返回 true → 3 个全部放行</text>
+
+    <line x1="580" y1="236" x2="580" y2="286" stroke="#64748b" stroke-width="1.6" marker-end="url(#m5)"/>
+    <text x="594" y="268" font-size="12.5" fill="#64748b">只有 1 个请求进入临界区（Redis 正常时）</text>
+
+    <!-- CAS SQL -->
+    <rect x="230" y="290" width="700" height="150" rx="10" fill="#f0fdf9" stroke="#10b981" stroke-width="2.2"/>
+    <text x="250" y="316" font-size="13.5" font-weight="700" fill="#047857">★ OrdersMapper.grabOrder —— 唯一的并发临界区</text>
+    <text x="250" y="344" font-size="12.5" fill="#0f172a" font-family="ui-monospace,Consolas,monospace">UPDATE orders SET status='ACCEPTED', provider_id=?,</text>
+    <text x="250" y="366" font-size="12.5" fill="#0f172a" font-family="ui-monospace,Consolas,monospace">       accept_time=?, version=version+1, update_time=NOW()</text>
+    <text x="250" y="388" font-size="12.5" fill="#b91c1c" font-family="ui-monospace,Consolas,monospace"> WHERE id=? AND status='PENDING_ACCEPT'</text>
+    <text x="250" y="410" font-size="12.5" fill="#b91c1c" font-family="ui-monospace,Consolas,monospace">   AND provider_id IS NULL AND deleted=0</text>
+
+    <line x1="580" y1="440" x2="580" y2="486" stroke="#64748b" stroke-width="1.6" marker-end="url(#m5)"/>
+    <text x="594" y="468" font-size="12.5" fill="#64748b">串行执行 · 只有第一个匹配 WHERE 的更新会生效</text>
+
+    <!-- 数据行 -->
+    <rect x="230" y="490" width="700" height="84" rx="10" fill="#f1f5f9" stroke="#475569" stroke-width="1.6"/>
+    <text x="250" y="516" font-size="13.5" font-weight="700" fill="#1e293b">orders 表中的同一行 · InnoDB 排他行锁排队</text>
+    <text x="250" y="542" font-size="12.5" fill="#334155">status='PENDING_ACCEPT', provider_id=NULL</text>
+    <text x="250" y="562" font-size="12.5" fill="#334155">↓ 只有第一个事务能把它改掉，后到者 WHERE 不再匹配 → 影响行数 0</text>
+
+    <!-- 三个结果 -->
+    <line x1="290" y1="574" x2="290" y2="616" stroke="#10b981" stroke-width="1.8" marker-end="url(#m5g)"/>
+    <line x1="580" y1="574" x2="580" y2="616" stroke="#ef4444" stroke-width="1.8" marker-end="url(#m5r)"/>
+    <line x1="870" y1="574" x2="870" y2="616" stroke="#ef4444" stroke-width="1.8" marker-end="url(#m5r)"/>
+
+    <rect x="180" y="620" width="220" height="70" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.6"/>
+    <text x="290" y="646" text-anchor="middle" font-size="13.5" font-weight="700" fill="#047857">司机 A 抢到</text>
+    <text x="290" y="668" text-anchor="middle" font-size="12" fill="#065f46">影响 1 行 → 写状态日志</text>
+
+    <rect x="470" y="620" width="220" height="70" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="1.6"/>
+    <text x="580" y="646" text-anchor="middle" font-size="13.5" font-weight="700" fill="#b91c1c">司机 B 未抢到</text>
+    <text x="580" y="668" text-anchor="middle" font-size="12" fill="#991b1b">2003 订单已被接单（0 行）</text>
+
+    <rect x="760" y="620" width="220" height="70" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="1.6"/>
+    <text x="870" y="646" text-anchor="middle" font-size="13.5" font-weight="700" fill="#b91c1c">司机 C 未抢到</text>
+    <text x="870" y="668" text-anchor="middle" font-size="12" fill="#991b1b">2003 订单已被接单（0 行）</text>
+
+    <!-- 结论 -->
+    <rect x="180" y="722" width="800" height="56" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.4"/>
+    <text x="580" y="746" text-anchor="middle" font-size="13" fill="#1e3a5f">正确性 100% 来自 WHERE 条件 + InnoDB 行锁；Redis 挂了只会变慢，不会超卖。</text>
+    <text x="580" y="768" text-anchor="middle" font-size="13" fill="#1e3a5f">这就是「数据库兜底 + 缓存加速」，比「用 Redis 分布式锁保证不超卖」更可靠。</text>
+  </svg>
+  </div>
+
+  <div class="note bad">
+    <b>面试如果只让你讲一句话：</b>把「共享资源独占给一个请求」做得最便宜、最可靠的方式，就是一条带完整 <code>WHERE</code> 的 <code>UPDATE</code>。
+    Redis、MQ 都是在这个基础上加<b>性能</b>，不是加<b>正确性</b>。
+  </div>
+</section>
+
+<!-- ============================= 图 6 ============================= -->
+<section id="f6">
+  <h2>⑥ 抢单的 9 步（逐步做什么 / 为什么）</h2>
+  <p class="cap"><code>OrderServiceImpl.grab()</code> 在一个事务里顺序执行，任一步抛异常则后续全部不执行、已执行的回滚。</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="t"><span class="n">1</span>验司机资格</div>
+      <div class="d">requireProvider + canAcceptOrder：启用 + 审核 + 在线 + 接单开关，四者全 1。否则 1006。</div>
+    </div>
+    <div class="step">
+      <div class="t"><span class="n">2</span>Redis 短时防重</div>
+      <div class="d">SETNX grab:{orderNo} TTL 5s。失败即 2003。<b>只是削峰</b>，不保证唯一。</div>
+    </div>
+    <div class="step">
+      <div class="t"><span class="n">3</span>按单号查订单</div>
+      <div class="d">前端传的是 orderNo 业务单号，须先查出 order.id 才能做条件更新。</div>
+    </div>
+    <div class="step">
+      <div class="t"><span class="n">4</span>状态预判</div>
+      <div class="d">必须仍是 PENDING_ACCEPT，否则快速失败，省掉后面开销。</div>
+    </div>
+    <div class="step">
+      <div class="t"><span class="n">5</span>状态机校验</div>
+      <div class="d">assertCanTransit(PENDING_ACCEPT → ACCEPTED)。第 4 步保护业务，这步保护状态图。</div>
+    </div>
+    <div class="step">
+      <div class="t"><span class="n">6</span>服务范围校验</div>
+      <div class="d">canServe：订单类型在 serviceTypes 内，且城市为空或相同。防止绕过大厅直调接口。</div>
+    </div>
+    <div class="step key">
+      <div class="t"><span class="n">7</span>条件更新（裁决）</div>
+      <div class="d">grabOrder：WHERE status 且 provider_id IS NULL。影响 0 行 → 2003。<b>唯一决定胜负的一步。</b></div>
+    </div>
+    <div class="step">
+      <div class="t"><span class="n">8</span>写状态日志</div>
+      <div class="d">insert order_status_log，operator_type=2。operatorName 反查昵称并落快照，用户改名不影响历史。</div>
+    </div>
+    <div class="step">
+      <div class="t"><span class="n">9</span>finally 释放令牌</div>
+      <div class="d">DEL grab:{orderNo}。注意这发生在事务提交<b>之前</b>，短窗口内会有请求进 DB，由 CAS 兜住。</div>
+    </div>
+  </div>
+
+  <div class="note warn">
+    <b>看清"谁决定成败"：</b>第 1、4、6 步是<b>资格与范围</b>（防不该抢的人抢），第 2 步是<b>性能</b>，只有第 7 步是<b>并发正确性</b>。
+    很多项目把第 2 步当成第 7 步用，那就是真的会超卖。
+  </div>
+</section>
+
+<!-- ============================= 图 7 ============================= -->
+<section id="f7">
+  <h2>⑦ 支付与退款：两条独立的链路</h2>
+  <p class="cap">支付成功由「支付模块反推订单」，退款由「管理端发起」。两条链路都用条件更新保证幂等，重复执行不会重复推进。</p>
+
+  <div class="fig">
+  <svg viewBox="0 0 1160 540" width="1160" role="img" aria-label="支付与退款链路">
+    <defs>
+      <marker id="m7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#3b82f6"/>
+      </marker>
+      <marker id="m7a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#f59e0b"/>
+      </marker>
+    </defs>
+
+    <!-- 支付链路 -->
+    <text x="33" y="46" font-size="14" font-weight="700" fill="#1d4ed8">① 支付链路：PENDING_PAYMENT → COMPLETED</text>
+
+    <rect x="33" y="70" width="190" height="130" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="128" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#1d4ed8">客户点「支付」</text>
+    <text x="128" y="120" text-anchor="middle" font-size="11.5" fill="#334155">POST /api/payments</text>
+    <text x="128" y="142" text-anchor="middle" font-size="11.5" fill="#334155">/orders/{no}/pay</text>
+    <text x="128" y="164" text-anchor="middle" font-size="11.5" fill="#334155">X-Idempotency-Key</text>
+    <text x="128" y="186" text-anchor="middle" font-size="11.5" fill="#64748b">（可选，缺省用单号）</text>
+
+    <rect x="259" y="70" width="190" height="130" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="354" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#1d4ed8">创建支付单</text>
+    <text x="354" y="120" text-anchor="middle" font-size="11.5" fill="#334155">校验 PENDING_PAYMENT</text>
+    <text x="354" y="142" text-anchor="middle" font-size="11.5" fill="#334155">INSERT payment(PAYING)</text>
+    <text x="354" y="164" text-anchor="middle" font-size="11.5" fill="#334155">orders: UNPAID→PAYING</text>
+    <text x="354" y="186" text-anchor="middle" font-size="11.5" fill="#64748b">唯一索引兜底重复</text>
+
+    <rect x="485" y="70" width="190" height="130" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="580" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#1d4ed8">前端调模拟回调</text>
+    <text x="580" y="120" text-anchor="middle" font-size="11.5" fill="#334155">POST /api/public/</text>
+    <text x="580" y="142" text-anchor="middle" font-size="11.5" fill="#334155">payment/mock-callback</text>
+    <text x="580" y="164" text-anchor="middle" font-size="11.5" fill="#334155">白名单，无需登录</text>
+    <text x="580" y="186" text-anchor="middle" font-size="11.5" fill="#64748b">模拟真实网关</text>
+
+    <rect x="711" y="70" width="190" height="130" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="806" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#1d4ed8">markPaid 状态 CAS</text>
+    <text x="806" y="120" text-anchor="middle" font-size="11.5" fill="#334155">WHERE status IN</text>
+    <text x="806" y="142" text-anchor="middle" font-size="11.5" fill="#334155">('INIT','PAYING')</text>
+    <text x="806" y="164" text-anchor="middle" font-size="11.5" fill="#b91c1c">0 行 → 静默 return</text>
+    <text x="806" y="186" text-anchor="middle" font-size="11.5" fill="#64748b">不抛异常防重投</text>
+
+    <rect x="937" y="70" width="190" height="130" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.6"/>
+    <text x="1032" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#047857">订单推进</text>
+    <text x="1032" y="120" text-anchor="middle" font-size="11.5" fill="#065f46">PENDING_PAYMENT →</text>
+    <text x="1032" y="142" text-anchor="middle" font-size="11.5" fill="#065f46">COMPLETED</text>
+    <text x="1032" y="164" text-anchor="middle" font-size="11.5" fill="#065f46">pay_status=PAID</text>
+    <text x="1032" y="186" text-anchor="middle" font-size="11.5" fill="#065f46">casStatus 0 行 → 2004</text>
+
+    <line x1="227" y1="135" x2="255" y2="135" stroke="#3b82f6" stroke-width="1.6" marker-end="url(#m7)"/>
+    <line x1="453" y1="135" x2="481" y2="135" stroke="#3b82f6" stroke-width="1.6" marker-end="url(#m7)"/>
+    <line x1="679" y1="135" x2="707" y2="135" stroke="#3b82f6" stroke-width="1.6" marker-end="url(#m7)"/>
+    <line x1="905" y1="135" x2="933" y2="135" stroke="#3b82f6" stroke-width="1.6" marker-end="url(#m7)"/>
+
+    <!-- 退款链路 -->
+    <text x="60" y="266" font-size="14" font-weight="700" fill="#b45309">② 退款链路：仅 ADMIN 可发起（AdminOrderController.refund）</text>
+
+    <rect x="60" y="292" width="230" height="130" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="175" y="318" text-anchor="middle" font-size="13" font-weight="700" fill="#b45309">管理员发起退款</text>
+    <text x="175" y="342" text-anchor="middle" font-size="11.5" fill="#334155">POST /api/admin/orders</text>
+    <text x="175" y="364" text-anchor="middle" font-size="11.5" fill="#334155">/{orderNo}/refund</text>
+    <text x="175" y="386" text-anchor="middle" font-size="11.5" fill="#334155">@RequireRole("ADMIN")</text>
+    <text x="175" y="408" text-anchor="middle" font-size="11.5" fill="#64748b">带金额 + 原因</text>
+
+    <rect x="330" y="292" width="230" height="130" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="445" y="318" text-anchor="middle" font-size="13" font-weight="700" fill="#b45309">金额守恒校验</text>
+    <text x="445" y="342" text-anchor="middle" font-size="11.5" fill="#334155">已退 + 本次 ≤ 已付</text>
+    <text x="445" y="364" text-anchor="middle" font-size="11.5" fill="#334155">已付 ≤ 订单实收</text>
+    <text x="445" y="386" text-anchor="middle" font-size="11.5" fill="#334155">payStatus ∈ PAID /</text>
+    <text x="445" y="408" text-anchor="middle" font-size="11.5" fill="#b91c1c">PARTIAL_REFUNDED，否则 4004</text>
+
+    <rect x="600" y="292" width="230" height="130" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="715" y="318" text-anchor="middle" font-size="13" font-weight="700" fill="#b45309">写退款单 + 累加</text>
+    <text x="715" y="342" text-anchor="middle" font-size="11.5" fill="#334155">INSERT refund(SUCCESS)</text>
+    <text x="715" y="364" text-anchor="middle" font-size="11.5" fill="#334155">orders.refund_amount 累加</text>
+    <text x="715" y="386" text-anchor="middle" font-size="11.5" fill="#334155">pay_status → 部分/已退款</text>
+    <text x="715" y="408" text-anchor="middle" font-size="11.5" fill="#64748b">幂等键含 refundNo</text>
+
+    <rect x="870" y="292" width="230" height="130" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="985" y="318" text-anchor="middle" font-size="13" font-weight="700" fill="#b45309">全额则关支付单</text>
+    <text x="985" y="342" text-anchor="middle" font-size="11.5" fill="#334155">markRefunded CAS</text>
+    <text x="985" y="364" text-anchor="middle" font-size="11.5" fill="#334155">WHERE status='SUCCESS'</text>
+    <text x="985" y="386" text-anchor="middle" font-size="11.5" fill="#334155">payment → REFUNDED</text>
+    <text x="985" y="408" text-anchor="middle" font-size="11.5" fill="#64748b">部分退款不改支付单</text>
+
+    <line x1="292" y1="357" x2="326" y2="357" stroke="#f59e0b" stroke-width="1.6" marker-end="url(#m7a)"/>
+    <line x1="562" y1="357" x2="596" y2="357" stroke="#f59e0b" stroke-width="1.6" marker-end="url(#m7a)"/>
+    <line x1="832" y1="357" x2="866" y2="357" stroke="#f59e0b" stroke-width="1.6" marker-end="url(#m7a)"/>
+
+    <rect x="60" y="460" width="1040" height="56" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="580" y="484" text-anchor="middle" font-size="12.5" fill="#334155">两条链路的幂等都是「条件更新 + 影响行数」：markPaid、orders.casStatus、markRefunded 全部带 WHERE</text>
+    <text x="580" y="505" text-anchor="middle" font-size="12.5" fill="#334155">重复回调 / 重复退款请求进来时，第二次影响 0 行，直接把已有结果返回，不会二次推进状态</text>
+  </svg>
+  </div>
+</section>
+
+<!-- ============================= 图 8 ============================= -->
+<section id="f8">
+  <h2>⑧ 三层防重：以「客户下单」为例</h2>
+  <p class="cap">每一层都能独立生效，最后一层是数据库，永不失效。</p>
+
+  <div class="layers">
+    <div class="layer" style="border-color:#bfdbfe;background:#f8fbff">
+      <div class="lab" style="background:#eff6ff;color:#1d4ed8">第 1 层<br>前端</div>
+      <div class="body">
+        <b>生成 <code>X-Idempotency-Key</code> 请求头</b>
+        <small>Home.vue 调 randomKey('order') 生成 <code>order-&lt;时间戳36进制&gt;-&lt;随机串&gt;</code>，同一次提交复用同一个 key</small>
+      </div>
+      <div style="flex:0 0 210px;font-size:12.5px;color:#1d4ed8">拦住了：<b>用户手抖连点两次</b></div>
+    </div>
+    <div class="arrowdown">▼</div>
+    <div class="layer" style="border-color:#ddd6fe;background:#fcfaff">
+      <div class="lab" style="background:#f5f3ff;color:#6d28d9">第 2 层<br>Redis</div>
+      <div class="body">
+        <b>SETNX <code>daijia:idem:order:create:{customerId}:{key}</code>，TTL 5 分钟</b>
+        <small>命中即抛 5001「重复请求，请勿重复提交」。Redis 不可用时 RedisHelper 直接返回 true 放行（熔断 30s）</small>
+      </div>
+      <div style="flex:0 0 210px;font-size:12.5px;color:#6d28d9">拦住了：<b>同一 key 的并发重复请求</b></div>
+    </div>
+    <div class="arrowdown">▼</div>
+    <div class="layer" style="border-color:#a7f3d0;background:#f6fffb">
+      <div class="lab" style="background:#ecfdf5;color:#047857">第 3 层<br>数据库</div>
+      <div class="body">
+        <b><code>orders.uk_order_no</code> 唯一索引 + 捕获 <code>DuplicateKeyException</code></b>
+        <small>order_no 由「DO + 17 位时间戳 + 4 位随机数」生成，撞号概率极低，但撞了就转 5001，不会静默成功</small>
+      </div>
+      <div style="flex:0 0 210px;font-size:12.5px;color:#047857">拦住了：<b>前两层全被绕过的情况</b></div>
+    </div>
+  </div>
+
+  <div class="note">
+    同样的三层结构也用在<b>支付</b>（幂等键 = 传入值 ?: 订单号，唯一索引 <code>uk_idempotency_key</code>）和<b>退款</b>（幂等键 = <code>refund:{orderNo}:{refundNo}</code>）上，
+    是项目里复用得最彻底的一个模式。
+  </div>
+</section>
+
+<!-- ============================= 图 9 ============================= -->
+<section id="f9">
+  <h2>⑨ 数据表关系（仓库已有 ER 图）</h2>
+  <p class="cap">13 张表 · 无物理外键 · 金额统一为「分」· 关系由唯一键/索引 + 业务层保证。</p>
+  <div class="fig">
+    <img class="er" src="db/dds-er-diagram.png" alt="数据库 ER 图">
+  </div>
+  <div class="note warn">
+    <b>注意：</b><code>vehicle</code>（用户车辆）和 <code>address</code>（常用地址）两张表<b>建好了但没有对应的 Java 实体/Mapper</b>，
+    属于预留设计。看代码时找不到它们不是你看漏了。
+  </div>
+</section>
+
+<!-- ============================= 图 10 ============================= -->
+<section id="f10">
+  <h2>⑩ 已知缺口：按优先级</h2>
+  <p class="cap">读懂了架构之后，能指出这些问题才说明真的读进去了。</p>
+
+  <div class="fig">
+  <table>
+    <thead>
+      <tr><th style="width:64px">优先级</th><th style="min-width:230px">问题</th><th style="min-width:200px">位置</th><th style="min-width:260px">后果 / 修法</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="prio p0">P0</span></td>
+        <td>抢单与大厅都<b>没校验 <code>expire_time</code></b>，而定时关闭任务 60 秒才跑一次</td>
+        <td><code>grab()</code> 第 261 行<br><code>pageHall</code> 第 227 行</td>
+        <td>中间最多 60 秒窗口能抢到本该关闭的单。<br>修：加 <code>expire_time &gt; NOW()</code> 条件</td>
+      </tr>
+      <tr>
+        <td><span class="prio p0">P0</span></td>
+        <td>超时关闭是<b>批量 UPDATE，不写 <code>order_status_log</code></b></td>
+        <td><code>OrdersMapper.closeExpiredOrders</code></td>
+        <td>时间线断档，客户看不出「为什么单没了」。<br>修：按 id 集合补写日志</td>
+      </tr>
+      <tr>
+        <td><span class="prio p1">P1</span></td>
+        <td>预约单的 <code>expire_time</code> 仍从<b>下单时间</b>算</td>
+        <td><code>create()</code> 第 127 行</td>
+        <td>3 天后的预约单 15 分钟就被关。<br>修：改用 <code>booking_time</code> 倒推</td>
+      </tr>
+      <tr>
+        <td><span class="prio p1">P1</span></td>
+        <td><code>AuthInterceptor</code> 每请求 <b>3 次无缓存查询</b>（用户/角色/权限）</td>
+        <td>第 80~100 行</td>
+        <td>抢单热点链路固定开销。<br>修：角色权限缓存进 Redis + 改角色时失效</td>
+      </tr>
+      <tr>
+        <td><span class="prio p1">P1</span></td>
+        <td><code>assignRoles</code> <b>无事务</b>：先删光再逐条插</td>
+        <td><code>SysUserServiceImpl:82-98</code></td>
+        <td>中途失败会让用户丢失全部角色。<br>修：加 <code>@Transactional</code></td>
+      </tr>
+      <tr>
+        <td><span class="prio p1">P1</span></td>
+        <td>抢单失败<b>错误码语义混淆</b>（三种情况都是 2003）</td>
+        <td><code>grab()</code> 三处</td>
+        <td>「点了两次」和「被别人抢走」提示一样。<br>修：拆分为不同 code</td>
+      </tr>
+      <tr>
+        <td><span class="prio p2">P2</span></td>
+        <td>两个 <code>saveStatusLog</code> 实现不一致</td>
+        <td>OrderServiceImpl vs PaymentServiceImpl</td>
+        <td>支付日志没有操作人名。<br>修：抽公共组件</td>
+      </tr>
+      <tr>
+        <td><span class="prio p2">P2</span></td>
+        <td><code>finishService</code> 用<b>当前</b>计价规则重算，与下单预估可能差异大</td>
+        <td>第 331 行</td>
+        <td>用户投诉「和预估价差太多」。<br>修：结算用下单时的规则快照</td>
+      </tr>
+      <tr>
+        <td><span class="prio p2">P2</span></td>
+        <td><code>update(null, wrapper)</code> 不递增 <code>version</code></td>
+        <td>startService / finishService / cancelOrder</td>
+        <td>version 无法反映真实修改次数。<br>修：显式写 <code>version=version+1</code></td>
+      </tr>
+      <tr>
+        <td><span class="prio p2">P2</span></td>
+        <td>Redis 令牌在<b>事务提交前</b>释放</td>
+        <td><code>grab()</code> 的 <code>finally</code></td>
+        <td>短窗口多次进 DB（已被 CAS 兜住）。<br>修：<code>TransactionSynchronization.afterCompletion</code></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    完整版（含 P3：无推送、JWT secret 硬编码、<code>PayStatus.PAYING != null</code> 恒真等 13 项）见
+    《学习文档-模块协作与数据流.md》第 11 章。
+  </div>
+</section>
+
+<footer>
+  图解配套文档：docs/学习文档-模块协作与数据流.md ｜ 代码基线：backend + frontend 当前工作区 ｜ 可直接 Ctrl+P 打印为 PDF
+</footer>
+
+</body>
+</html>
