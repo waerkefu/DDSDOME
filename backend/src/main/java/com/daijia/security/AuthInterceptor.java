@@ -43,6 +43,13 @@ public class AuthInterceptor implements HandlerInterceptor {
     private final SysRoleMapper sysRoleMapper;// 角色映射器
     private final SysPermissionMapper sysPermissionMapper;// 权限映射器
 
+    /**
+     * 拦截请求前调用，用于校验 JWT 令牌
+     * @param request HTTP 请求
+     * @param response HTTP 响应
+     * @param handler 处理器（Controller 方法）
+     * @return 是否继续处理请求（true=继续，false=中断）
+     */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         // 如果 是 OPTIONS 请求 或 不是 Controller 处理器，直接放行

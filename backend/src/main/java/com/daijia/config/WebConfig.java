@@ -30,6 +30,10 @@ public class WebConfig implements WebMvcConfigurer {
             "/error"
     };
 
+    /**
+     * 注册认证拦截器，排除白名单路径
+     * @param registry 拦截器注册器
+     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor)
@@ -37,6 +41,10 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns(WHITE_LIST);
     }
 
+    /**
+     * 注册跨域规则，允许所有来源、方法、头
+     * @param registry 跨域注册器
+     */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
