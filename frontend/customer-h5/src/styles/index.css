@@ -1,0 +1,150 @@
+/* 客户端 H5 全局样式（移动端优先，max-width 560px 居中） */
+:root {
+  --app-max-width: 560px;
+  --color-primary: #3b6ef0;
+  --color-bg: #f4f5f7;
+  --color-card: #ffffff;
+  --color-text: #1f2329;
+  --color-text-sub: #8a9099;
+  --tabbar-height: 56px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+  background: #e9ebee;
+  color: var(--color-text);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+/* 移动端外壳：宽度限制并居中 */
+.app-shell {
+  max-width: var(--app-max-width);
+  min-height: 100vh;
+  margin: 0 auto;
+  background: var(--color-bg);
+  position: relative;
+}
+
+/* 页面通用容器：底部预留 tabbar 空间 */
+.page {
+  min-height: 100vh;
+  padding: 12px 12px calc(var(--tabbar-height) + 24px);
+}
+
+.page--no-tab {
+  padding-bottom: 24px;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 4px 0 12px;
+}
+
+.card {
+  background: var(--color-card);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.card__title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.text-sub {
+  color: var(--color-text-sub);
+}
+
+.amount {
+  color: #f5222d;
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.row + .row {
+  margin-top: 8px;
+}
+
+.row__label {
+  color: var(--color-text-sub);
+  flex: 0 0 auto;
+}
+
+.row__value {
+  text-align: right;
+  flex: 1 1 auto;
+  word-break: break-all;
+}
+
+.divider {
+  height: 1px;
+  background: #eef0f3;
+  margin: 12px 0;
+}
+
+.empty {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--color-text-sub);
+}
+
+.fixed-bottom-bar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: var(--tabbar-height);
+  width: 100%;
+  max-width: var(--app-max-width);
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+/* 有底部 TabBar 的页面，操作栏需浮在 TabBar 之上，否则被其遮挡 */
+.app-shell--with-tab .fixed-bottom-bar {
+  bottom: var(--tabbar-height);
+}
+
+/* 调整 Element Plus 组件的移动端观感 */
+.el-tabs__header {
+  margin-bottom: 10px;
+}
+
+.el-card,
+.el-message-box {
+  border-radius: 12px;
+}
